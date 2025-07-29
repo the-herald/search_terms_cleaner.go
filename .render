@@ -1,0 +1,19 @@
+type: web
+name: search-terms-cleaner-go
+env: go
+plan: free
+buildCommand: go build -o server ./api
+startCommand: ./server
+envVars:
+  - key: PORT
+    value: 10000
+  - key: GOOGLE_ADS_CLIENT_ID
+    sync: false
+  - key: GOOGLE_ADS_CLIENT_SECRET
+    sync: false
+  - key: GOOGLE_ADS_REFRESH_TOKEN
+    sync: false
+  - key: GOOGLE_DEVELOPER_TOKEN
+    sync: false
+  - key: OPENAI_API_KEY
+    sync: false
