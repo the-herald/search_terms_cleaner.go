@@ -1,37 +1,26 @@
-# Use the official Golang image
-FROM golang:1.22
+# Use the official Go image
+FROM golang:1.21 as builder
 
-# Install Buf CLI
-RUN curl -sSL \
-  "https://github.com/bufbuild/buf/releases/download/v1.27.1/buf-Linux-x86_64.tar.gz" \
-  | tar -xz -C /usr/local/bin --strip-components 1
-
-# Set working directory inside container
 WORKDIR /app
 
-# Copy go.mod and go.sum first to leverage Docker caching
+# Copy go.mod and go.sum first (for layer caching)
 COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
 
-# Copy the rest of the app
+# Copy the entire project
 COPY . .
 
-# Generate Go protobuf files using Buf
-WORKDIR /app/Search_Terms_Cleaner/protos
-RUN buf generate
+# Generate protobuf Go code
+RUN go install github.com/bufbuild/buf/cmd/buf@latest
+RUN buf generate ./protos
 
-# Return to main app root and build the binary
-WORKDIR /app/Search_Terms_Cleaner
-RUN go build -o server ./api/main.go
+# Build the Go app
+WORKDIR /app/api
+RUN go build -o /search-terms-cleaner
 
-# Use a small final image for production
-FROM gcr.io/distroless/base-debian11
-WORKDIR /app
-COPY --from=0 /app/Search_Terms_Cleaner/server .
+# ---
 
-# Required by Render
-ENV PORT=10000
-
-EXPOSE 10000
-CMD ["/app/server"]
+FROM gcr.io/distroless/static:nonroot
+COPY --from=builder /search-terms-cleaner /
+ENTRYPOINT ["/search-terms-cleaner"]
