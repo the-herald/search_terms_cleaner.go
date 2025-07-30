@@ -6,8 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"search_term_cleaner/shared"
-	"search_term_cleaner/search_terms_cleaner"
+
+	"Search_Terms_Cleaner/shared"
+	"Search_Terms_Cleaner/search_terms_cleaner"
 )
 
 func main() {
@@ -31,7 +32,7 @@ func main() {
 			return
 		}
 
-		results, err := search_terms_cleaner.RunCleanerFor(accountInput)
+		results, err := search_terms_cleaner.RunCleaner(accountInput)
 		if err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return

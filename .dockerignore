@@ -1,0 +1,24 @@
+# Ignore everything Git should ignore
+.git
+.gitignore
+
+# Build artifacts and generated binaries
+*.exe
+*.out
+*.test
+server
+gen/
+build/
+bin/
+
+# Local editor junk
+.vscode/
+.idea/
+*.swp
+
+# Mac and Windows system files
+.DS_Store
+Thumbs.db
+
+# Secrets and config
+.env

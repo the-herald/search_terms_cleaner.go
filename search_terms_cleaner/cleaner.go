@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 
-	"Search_Term_Cleaner/auth_flow"
-	"Search_Term_Cleaner/shared"
+	"Search_Terms_Cleaner/auth_flow"
+	"Search_Terms_Cleaner/shared"
 
-	"github.com/GoogleAds/google-ads-go/v14/services"
-	"github.com/GoogleAds/google-ads-go/v14/resources"
+	"Search_Terms_Cleaner/gen/go/google/ads/googleads/v20/services"
+	"Search_Terms_Cleaner/gen/go/google/ads/googleads/v20/resources"
 )
 
 type FlaggedTerm struct {
@@ -20,12 +19,14 @@ type FlaggedTerm struct {
 }
 
 func RunCleaner(accountID string) (map[string]interface{}, error) {
-	client, err := auth_flow.LoadGoogleAdsClient(accountID)
+	conn, err := auth_flow.GetGoogleAdsClient()
 	if err != nil {
 		return nil, fmt.Errorf("auth error: %v", err)
 	}
+	defer conn.Close()
+
 	ctx := context.Background()
-	gaService := client.Services.GoogleAdsService
+	client := services.NewGoogleAdsServiceClient(conn)
 
 	query := `
 		SELECT
@@ -42,7 +43,7 @@ func RunCleaner(accountID string) (map[string]interface{}, error) {
 		Query:      query,
 	}
 
-	it := gaService.Search(ctx, req)
+	it := client.Search(ctx, req)
 	searchTerms := make(map[string]bool)
 
 	for {

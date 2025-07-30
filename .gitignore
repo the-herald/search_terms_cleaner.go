@@ -1,23 +1,26 @@
-# Binaries
+# Go build artifacts
+/bin/
+/gen/
+/build/
+/server
 *.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-
-# Test binary
+*.out
 *.test
 
-# Output of the go coverage tool
-*.out
+# Buf-generated code (Go protobuf output)
+shared/googleads/
 
-# IDEs and editors
+# Protobuf lock file
+buf.lock
+
+# IDE/editor config
 .vscode/
 .idea/
 *.swp
 
-# Dependency directories (Go modules)
-vendor/
+# OS-specific
+.DS_Store
+Thumbs.db
 
-# Env files
+# Environment variables (secrets)
 .env
