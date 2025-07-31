@@ -12,7 +12,13 @@ RUN go mod download
 
 # Build protobuf Go files
 WORKDIR /app/protos
+
+# Install Buf and required protoc plugins
 RUN go install github.com/bufbuild/buf/cmd/buf@latest
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+# Generate code
 RUN buf generate
 
 # Build the Go app
