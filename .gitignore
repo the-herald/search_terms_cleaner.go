@@ -1,14 +1,20 @@
 # Go build artifacts
 /bin/
-/gen/
 /build/
 /server
 *.exe
 *.out
 *.test
 
-# Buf-generated code (Go protobuf output)
-shared/googleads/
+# Ignore buf-generated files from unrelated versions, but NOT v20
+# (We are now keeping our necessary v20 files in version control)
+# So do NOT ignore `/gen/` entirely!
+# Remove or comment this line:
+# /gen/
+
+# Optionally still ignore other old versions if you ever generate them
+# /gen/go/google/golang/org/genproto/googleapis/ads/googleads/v18/
+# /gen/go/google/golang/org/genproto/googleapis/ads/googleads/v19/
 
 # Protobuf lock file
 buf.lock

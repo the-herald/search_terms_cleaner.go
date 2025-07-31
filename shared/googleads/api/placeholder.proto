@@ -1,0 +1,4 @@
+syntax = "proto3";
+package protobuf;  // or package api; depending on folder name
+
+// Placeholder proto to satisfy import references.
