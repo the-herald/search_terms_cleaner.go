@@ -4,12 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
+	"time"
 
-	"Search_Terms_Cleaner/auth_flow"
-	"Search_Terms_Cleaner/shared"
-
-	"Search_Terms_Cleaner/gen/go/google/ads/googleads/v20/services"
-	"Search_Terms_Cleaner/gen/go/google/ads/googleads/v20/resources"
+	"google.golang.org/genproto/googleapis/ads/googleads/v20/resources"
+	"google.golang.org/genproto/googleapis/ads/googleads/v20/services"
 )
 
 type FlaggedTerm struct {
@@ -25,7 +24,10 @@ func RunCleaner(accountID string) (map[string]interface{}, error) {
 	}
 	defer conn.Close()
 
-	ctx := context.Background()
+	// Set a timeout for the API request
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
 	client := services.NewGoogleAdsServiceClient(conn)
 
 	query := `
@@ -43,45 +45,54 @@ func RunCleaner(accountID string) (map[string]interface{}, error) {
 		Query:      query,
 	}
 
-	it := client.Search(ctx, req)
-	searchTerms := make(map[string]bool)
+	resp, err := client.Search(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("Google Ads API search failed for account %s: %v", accountID, err)
+	}
 
-	for {
-		resp, err := it.Next()
-		if err != nil {
-			break
+	searchTerms := make(map[string]bool)
+	for _, row := range resp.Results {
+		stv := row.GetSearchTermView()
+		if stv == nil {
+			continue
 		}
-		term := resp.GetSearchTermView().GetSearchTerm()
+		term := stv.GetSearchTerm()
 		if term != "" {
 			searchTerms[term] = true
+			log.Printf("Term: %-40s | Impressions: %d | Clicks: %d | Conversions: %d",
+				term,
+				row.GetMetrics().GetImpressions(),
+				row.GetMetrics().GetClicks(),
+				row.GetMetrics().GetConversions())
 		}
 	}
 
 	if len(searchTerms) == 0 {
+		log.Printf("No search terms found for account %s", accountID)
 		return map[string]interface{}{
 			"status":     "no_data",
 			"account_id": accountID,
 		}, nil
 	}
 
+	// Extract terms, sort for consistency
 	var allTerms []string
 	for term := range searchTerms {
 		allTerms = append(allTerms, term)
 	}
+	sort.Strings(allTerms)
 
-	autoExcluded := []string{}
-	toReview := []string{}
+	log.Printf("Account %s: Pulled %d search terms", accountID, len(allTerms))
 
-	for _, term := range allTerms {
-		if shared.IsDisqualified(term) {
-			autoExcluded = append(autoExcluded, term)
-		} else {
-			toReview = append(toReview, term)
-		}
-	}
+	// Split into disqualified and to-review
+	autoExcluded, toReview := splitTerms(allTerms)
+	log.Printf("Account %s: Auto-excluded %d terms, flagged %d for AI review",
+		accountID, len(autoExcluded), len(toReview))
 
 	aiFlagged := shared.AIFlagTerms(toReview)
+	logAIFlags(accountID, aiFlagged)
 
+	// Build flag list
 	var allFlags []FlaggedTerm
 	for _, term := range autoExcluded {
 		allFlags = append(allFlags, FlaggedTerm{
@@ -100,7 +111,7 @@ func RunCleaner(accountID string) (map[string]interface{}, error) {
 
 	result, err := applyExclusions(client, accountID, allFlags)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("exclusion error for account %s: %v", accountID, err)
 	}
 
 	return map[string]interface{}{
@@ -111,4 +122,27 @@ func RunCleaner(accountID string) (map[string]interface{}, error) {
 		"flagged_count":    len(aiFlagged),
 		"exclusion_result": result,
 	}, nil
+}
+
+// splitTerms filters search terms into auto-excluded and AI-review groups
+func splitTerms(terms []string) (autoExcluded []string, toReview []string) {
+	for _, term := range terms {
+		if shared.IsDisqualified(term) {
+			autoExcluded = append(autoExcluded, term)
+		} else {
+			toReview = append(toReview, term)
+		}
+	}
+	return
+}
+
+// logAIFlags summarizes AI-flagged results in the logs
+func logAIFlags(accountID string, flags []FlaggedTerm) {
+	if len(flags) == 0 {
+		return
+	}
+	log.Printf("Account %s: AI flagged %d terms for manual review", accountID, len(flags))
+	for _, f := range flags {
+		log.Printf("  → [%s] %s | Reason: %s", f.FlagType, f.SearchTerm, f.Reason)
+	}
 }
