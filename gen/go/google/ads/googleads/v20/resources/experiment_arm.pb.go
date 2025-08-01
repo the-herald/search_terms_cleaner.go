@@ -147,7 +147,7 @@ var File_google_ads_googleads_v20_resources_experiment_arm_proto protoreflect.Fi
 
 const file_google_ads_googleads_v20_resources_experiment_arm_proto_rawDesc = "" +
 	"\n" +
-	"7google/ads/googleads/v20/resources/experiment_arm.proto\x12\"google.ads.googleads.v20.resources\x1a\x1fgoogle/api/field_behavior.proto\x1a\x19google/api/resource.proto\"\x99\x04\n" +
+	"7google/ads/googleads/v20/resources/experiment_arm.proto\x12\"google.ads.googleads.v20.resources\x1a\x1fgoogle/api/field_behavior.proto\x1a\x19google/api/resource.proto\x1a3google/ads/googleads/v20/resources/experiment.proto\"\x99\x04\n" +
 	"\rExperimentArm\x12S\n" +
 	"\rresource_name\x18\x01 \x01(\tB.\xe0A\x05\xfaA(\n" +
 	"&googleads.googleapis.com/ExperimentArmR\fresourceName\x12K\n" +
@@ -194,6 +194,7 @@ func file_google_ads_googleads_v20_resources_experiment_arm_proto_init() {
 	if File_google_ads_googleads_v20_resources_experiment_arm_proto != nil {
 		return
 	}
+	file_google_ads_googleads_v20_resources_experiment_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

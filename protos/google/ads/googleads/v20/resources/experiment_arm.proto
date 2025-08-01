@@ -18,6 +18,7 @@ package google.ads.googleads.v20.resources;
 
 import "google/api/field_behavior.proto";
 import "google/api/resource.proto";
+import "google/ads/googleads/v20/resources/experiment.proto";
 
 option csharp_namespace = "Google.Ads.GoogleAds.V20.Resources";
 option go_package = "google.golang.org/genproto/googleapis/ads/googleads/v20/resources;resources";
