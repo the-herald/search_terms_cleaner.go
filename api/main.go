@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
-	"Search_Terms_Cleaner/shared"
-	"Search_Terms_Cleaner/search_terms_cleaner"
+	"github.com/the-herald/search_terms_cleaner.go/shared"
+    	"github.com/the-herald/search_terms_cleaner.go/search_terms_cleaner"
 )
 
 func main() {

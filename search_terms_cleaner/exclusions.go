@@ -12,7 +12,7 @@ import (
 	"google.golang.org/genproto/googleapis/ads/googleads/v20/services"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	"search_terms_cleaner/shared"
+	"github.com/the-herald/search_terms_cleaner.go/shared"
 )
 
 const (
